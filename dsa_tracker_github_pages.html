@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DSA Roadmap Tracker</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --panel:#161920;
+    --panel2:#1c202a;
+    --border:#2a2f3a;
+    --text:#e7e9ee;
+    --muted:#8890a0;
+    --accent:#5eead4;
+    --accent2:#818cf8;
+    --done:#34d399;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+  header{margin-bottom:24px;}
+  h1{
+    font-size:1.6rem;
+    margin:0 0 4px;
+    letter-spacing:-0.02em;
+  }
+  .sub{color:var(--muted);font-size:0.9rem;}
+
+  .stats{
+    display:flex;
+    gap:12px;
+    margin:20px 0;
+    flex-wrap:wrap;
+  }
+  .stat{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 16px;
+    flex:1;
+    min-width:120px;
+  }
+  .stat .num{font-size:1.4rem;font-weight:700;color:var(--accent);font-family:var(--mono);}
+  .stat .label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;}
+
+  .overall-bar{
+    height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:6px;border:1px solid var(--border);
+  }
+  .overall-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%;transition:width .3s;}
+
+  .controls{
+    display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;
+  }
+  .controls input[type=text]{
+    background:var(--panel);border:1px solid var(--border);color:var(--text);
+    padding:8px 12px;border-radius:8px;font-size:0.85rem;flex:1;min-width:160px;
+  }
+  select{
+    background:var(--panel);border:1px solid var(--border);color:var(--text);
+    padding:8px 10px;border-radius:8px;font-size:0.85rem;
+  }
+  button.reset{
+    background:transparent;border:1px solid var(--border);color:var(--muted);
+    padding:8px 12px;border-radius:8px;font-size:0.8rem;cursor:pointer;
+  }
+  button.reset:hover{border-color:#e06060;color:#e06060;}
+
+  .pattern{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .pattern.hidden{display:none;}
+  .pattern-head{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .pattern-head:hover{background:var(--panel2);}
+  .pnum{
+    font-family:var(--mono);
+    font-size:0.75rem;
+    color:var(--muted);
+    width:22px;
+    flex-shrink:0;
+  }
+  .pname{font-weight:600;font-size:0.95rem;flex:1;}
+  .pprogress-text{font-family:var(--mono);font-size:0.78rem;color:var(--muted);white-space:nowrap;}
+  .mini-bar{
+    width:70px;height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;
+  }
+  .mini-fill{height:100%;background:var(--done);width:0%;}
+  .chevron{color:var(--muted);transition:transform .2s;font-size:0.75rem;flex-shrink:0;}
+  .pattern.open .chevron{transform:rotate(90deg);}
+
+  .pattern-body{
+    display:none;
+    padding:0 16px 16px;
+    border-top:1px solid var(--border);
+  }
+  .pattern.open .pattern-body{display:block;}
+
+  .stage{margin-top:14px;}
+  .stage-label{
+    font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent2);margin-bottom:6px;font-weight:600;
+  }
+  .problems{
+    display:flex;flex-wrap:wrap;gap:8px;
+  }
+  .prob{
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:6px 10px;
+    font-family:var(--mono);
+    font-size:0.82rem;
+  }
+  .prob a{color:var(--text);text-decoration:none;}
+  .prob a:hover{color:var(--accent);text-decoration:underline;}
+  .prob input[type=checkbox]{
+    width:15px;height:15px;accent-color:var(--done);cursor:pointer;
+  }
+  .prob.checked{border-color:var(--done);background:rgba(52,211,153,0.08);}
+  .prob.checked a{color:var(--muted);text-decoration:line-through;}
+
+  .template-row{
+    margin-top:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding-top:12px;
+    border-top:1px dashed var(--border);
+  }
+  .template-row label{font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .template-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent2);cursor:pointer;}
+
+  footer{margin-top:30px;color:var(--muted);font-size:0.78rem;text-align:center;}
+  .loading{color:var(--muted);font-size:0.85rem;padding:20px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>DSA Preparation Roadmap</h1>
+    <div class="sub">30 patterns · 180 problems · From zero to OA ready</div>
+  </header>
+
+  <div class="stats" id="statsRow">
+    <div class="stat" style="flex:2 1 240px;">
+      <div class="num" id="overallNum">0 / 180</div>
+      <div class="label">Problems solved</div>
+      <div class="overall-bar"><div class="overall-fill" id="overallFill"></div></div>
+    </div>
+    <div class="stat">
+      <div class="num" id="patternsNum">0 / 30</div>
+      <div class="label">Patterns complete</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="templatesNum">0 / 30</div>
+      <div class="label">Templates written</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchBox" placeholder="Search pattern name...">
+    <select id="filterSelect">
+      <option value="all">All patterns</option>
+      <option value="inprogress">In progress</option>
+      <option value="done">Completed</option>
+      <option value="untouched">Not started</option>
+    </select>
+    <button class="reset" id="resetBtn">Reset all progress</button>
+  </div>
+
+  <div id="patternsList" class="loading">Loading your progress...</div>
+
+  <footer>Progress is saved automatically in your browser. Your progress remains after refreshing the page.</footer>
+</div>
+
+<script>
+const DATA = [
+  [1,"Sliding Window",[3,76,209,424,567,904]],
+  [2,"Two Pointers",[11,15,16,18,42,167]],
+  [3,"Fast / Slow Pointers (Linked List)",[141,142,19,876,160,234]],
+  [4,"Binary Search on Sorted Data",[33,34,35,153,162,704]],
+  [5,"Binary Search on Answer",[875,1011,410,774,1283,1482]],
+  [6,"Hashing / Frequency Maps",[1,49,128,217,242,347]],
+  [7,"Prefix Sum / Running Sum",[303,560,724,930,974,523]],
+  [8,"Difference Array / Range Updates",[370,1094,1109,1893,1943,2381]],
+  [9,"Monotonic Stack",[739,496,503,84,85,901]],
+  [10,"Monotonic Queue / Deque",[239,862,1425,1438,1499,1696]],
+  [11,"Heap / Top K",[215,347,692,703,973,1046]],
+  [12,"Intervals",[56,57,252,253,435,452]],
+  [13,"Greedy Scheduling / Sorting",[45,55,406,621,763,134]],
+  [14,"Linked List Manipulation",[21,23,24,25,92,138]],
+  [15,"Tree DFS",[104,112,113,543,124,226]],
+  [16,"Tree BFS / Level Order",[102,103,199,515,637,116]],
+  [17,"BST Problems",[98,99,230,235,450,700]],
+  [18,"Backtracking Basics",[46,47,77,78,90,39]],
+  [19,"Backtracking with Constraints",[40,17,79,131,51,52]],
+  [20,"Graph BFS / DFS",[200,695,733,994,1091,1254]],
+  [21,"Topological Sort / DAG",[207,210,802,1462,1203,2115]],
+  [22,"Union Find / DSU",[547,684,1319,1579,990,1202]],
+  [23,"Shortest Path",[743,787,1514,1631,1334,1976]],
+  [24,"MST / Graph Greedy",[1584,1135,1168,1489,778,1102]],
+  [25,"Trie",[208,211,212,648,677,1268]],
+  [26,"Bit Manipulation",[136,137,191,338,268,190]],
+  [27,"1D DP Basics",[70,198,213,322,279,300]],
+  [28,"Knapsack / Subset DP",[416,494,518,474,1049,879]],
+  [29,"Grid DP",[62,63,64,221,931,120]],
+  [30,"String DP / Sequence DP",[1143,72,115,583,97,1312]]
+];
+const STAGE_LABELS = ["Learn (understand the idea)","Repeat (build fluency)","Stretch (push yourself)"];
+const STORE_KEY = "dsa_roadmap_progress_v1";
+let state = { problems:{}, templates:{}, open:{} };
+function loadState() {
+    const saved = localStorage.getItem(STORE_KEY);
+
+    if (saved) {
+        state = JSON.parse(saved);
+    }
+
+    render();
+}
+
+function saveState() {
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+function patternStats(pattern){
+  const probs = pattern[2];
+  const solved = probs.filter(p => state.problems[pattern[0]+"_"+p]).length;
+  return {solved, total: probs.length, pct: Math.round((solved/probs.length)*100)};
+}
+
+function render(){
+  const list = document.getElementById('patternsList');
+  list.innerHTML = "";
+  list.classList.remove('loading');
+
+  const search = document.getElementById('searchBox').value.trim().toLowerCase();
+  const filter = document.getElementById('filterSelect').value;
+
+  let totalSolved = 0, patternsDone = 0, templatesDone = 0;
+
+  DATA.forEach(pattern => {
+    const [num, name, probs] = pattern;
+    const st = patternStats(pattern);
+    totalSolved += st.solved;
+    if(st.solved === st.total) patternsDone++;
+    if(state.templates[num]) templatesDone++;
+
+    if(search && !name.toLowerCase().includes(search)) return;
+    if(filter === 'done' && st.solved !== st.total) return;
+    if(filter === 'untouched' && st.solved !== 0) return;
+    if(filter === 'inprogress' && (st.solved === 0 || st.solved === st.total)) return;
+
+    const card = document.createElement('div');
+    card.className = 'pattern' + (state.open[num] ? ' open' : '');
+
+    const head = document.createElement('div');
+    head.className = 'pattern-head';
+    head.innerHTML = `
+      <span class="pnum">${String(num).padStart(2,'0')}</span>
+      <span class="pname">${name}</span>
+      <span class="pprogress-text">${st.solved}/${st.total}</span>
+      <span class="mini-bar"><span class="mini-fill" style="width:${st.pct}%"></span></span>
+      <span class="chevron">&#9656;</span>
+    `;
+    head.addEventListener('click', () => {
+      state.open[num] = !state.open[num];
+      card.classList.toggle('open');
+      saveState();
+    });
+
+    const body = document.createElement('div');
+    body.className = 'pattern-body';
+
+    for(let s=0; s<3; s++){
+      const stageDiv = document.createElement('div');
+      stageDiv.className = 'stage';
+      const stageProbs = probs.slice(s*2, s*2+2);
+      stageDiv.innerHTML = `<div class="stage-label">${STAGE_LABELS[s]}</div>`;
+      const probsWrap = document.createElement('div');
+      probsWrap.className = 'problems';
+      stageProbs.forEach(p => {
+        const key = num+"_"+p;
+        const checked = !!state.problems[key];
+        const chip = document.createElement('div');
+        chip.className = 'prob' + (checked ? ' checked' : '');
+        chip.innerHTML = `
+          <input type="checkbox" ${checked ? 'checked' : ''} data-key="${key}">
+          <a href="https://leetcode.com/problems/${''}" target="_blank" rel="noopener" data-lc="${p}">#${p}</a>
+        `;
+        const cb = chip.querySelector('input');
+        cb.addEventListener('change', () => {
+          state.problems[key] = cb.checked;
+          chip.classList.toggle('checked', cb.checked);
+          saveState();
+          renderStatsOnly();
+          updateMini(card, pattern);
+        });
+        const link = chip.querySelector('a');
+        link.href = `https://leetcode.com/problemset/?search=${p}`;
+        probsWrap.appendChild(chip);
+      });
+      stageDiv.appendChild(probsWrap);
+      body.appendChild(stageDiv);
+    }
+
+    const templateRow = document.createElement('div');
+    templateRow.className = 'template-row';
+    const tChecked = !!state.templates[num];
+    templateRow.innerHTML = `
+      <label>
+        <input type="checkbox" ${tChecked ? 'checked' : ''} id="tmpl_${num}">
+        Wrote reusable code template from memory (no peeking)
+      </label>
+    `;
+    templateRow.querySelector('input').addEventListener('change', (e) => {
+      state.templates[num] = e.target.checked;
+      saveState();
+      renderStatsOnly();
+    });
+    body.appendChild(templateRow);
+
+    card.appendChild(head);
+    card.appendChild(body);
+    list.appendChild(card);
+  });
+
+  document.getElementById('overallNum').textContent = `${totalSolved} / 180`;
+  document.getElementById('overallFill').style.width = Math.round((totalSolved/180)*100) + '%';
+  document.getElementById('patternsNum').textContent = `${patternsDone} / 30`;
+  document.getElementById('templatesNum').textContent = `${templatesDone} / 30`;
+}
+
+function updateMini(card, pattern){
+  const st = patternStats(pattern);
+  card.querySelector('.pprogress-text').textContent = `${st.solved}/${st.total}`;
+  card.querySelector('.mini-fill').style.width = st.pct + '%';
+}
+
+function renderStatsOnly(){
+  let totalSolved = 0, patternsDone = 0, templatesDone = 0;
+  DATA.forEach(pattern => {
+    const st = patternStats(pattern);
+    totalSolved += st.solved;
+    if(st.solved === st.total) patternsDone++;
+    if(state.templates[pattern[0]]) templatesDone++;
+  });
+  document.getElementById('overallNum').textContent = `${totalSolved} / 180`;
+  document.getElementById('overallFill').style.width = Math.round((totalSolved/180)*100) + '%';
+  document.getElementById('patternsNum').textContent = `${patternsDone} / 30`;
+  document.getElementById('templatesNum').textContent = `${templatesDone} / 30`;
+}
+
+document.getElementById('searchBox').addEventListener('input', render);
+document.getElementById('filterSelect').addEventListener('change', render);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(confirm('Reset all progress? This cannot be undone.')){
+    state = { problems:{}, templates:{}, open:{} };
+    saveState();
+    render();
+  }
+});
+
+loadState();
+</script>
+</body>
+</html>
