@@ -226,16 +226,18 @@ const DATA = [
 const STAGE_LABELS = ["Learn (understand the idea)","Repeat (build fluency)","Stretch (push yourself)"];
 const STORE_KEY = "dsa_roadmap_progress_v1";
 let state = { problems:{}, templates:{}, open:{} };
+function loadState() {
+    const saved = localStorage.getItem(STORE_KEY);
 
-async function loadState(){
-  try{
-    const res = await window.storage.get(STORE_KEY, false);
-    if(res && res.value){
-      const parsed = JSON.parse(res.value);
-      state = Object.assign({problems:{},templates:{},open:{}}, parsed);
+    if (saved) {
+        state = JSON.parse(saved);
     }
-  }catch(e){ /* no saved state yet */ }
-  render();
+
+    render();
+}
+
+function saveState() {
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
 }
 async function saveState(){
   try{ await window.storage.set(STORE_KEY, JSON.stringify(state), false); }
